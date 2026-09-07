@@ -19,17 +19,17 @@
 
   var localTheme = document.createElement('link');
   localTheme.rel = 'stylesheet';
-  localTheme.href = 'files/main_style.css?restore=5';
+  localTheme.href = 'files/main_style.css?restore=6';
   document.head.appendChild(localTheme);
 
   var repairStyle = document.createElement('style');
   repairStyle.textContent = [
     '.desktop-nav .wsite-menu-item-wrap{position:relative;}',
-    '.desktop-nav .wsite-menu-item-wrap>.wsite-menu-wrap{position:absolute!important;left:50%!important;top:calc(100% + 6px)!important;transform:translateX(-50%)!important;width:max-content!important;min-width:0!important;z-index:50!important;margin:0!important;padding:0!important;}',
-    '.desktop-nav .wsite-menu-item-wrap>.wsite-menu-wrap>.wsite-menu{display:block!important;width:auto!important;min-width:132px!important;margin:0!important;padding:3px 0!important;background:#fff!important;border:1px solid rgba(0,0,0,.08)!important;box-shadow:0 2px 5px rgba(0,0,0,.13)!important;white-space:nowrap!important;}',
-    '.desktop-nav .wsite-menu-item-wrap>.wsite-menu-wrap>.wsite-menu>li{display:block!important;margin:0!important;padding:0!important;width:auto!important;}',
-    '.desktop-nav .wsite-menu-item-wrap>.wsite-menu-wrap>.wsite-menu>li>a{display:block!important;margin:0!important;padding:8px 12px!important;color:#555!important;background:#fff!important;border:0!important;text-align:left!important;text-transform:uppercase!important;letter-spacing:.06em!important;font-size:11px!important;font-weight:600!important;line-height:1.2!important;}',
-    '.desktop-nav .wsite-menu-item-wrap>.wsite-menu-wrap>.wsite-menu>li>a:hover{color:#35A89A!important;background:#fafafa!important;}',
+    '.desktop-nav .wsite-menu-item-wrap>.wsite-menu-wrap{position:absolute!important;left:0!important;top:calc(100% + 6px)!important;transform:none!important;width:200px!important;min-width:200px!important;z-index:50!important;margin:0!important;padding:0!important;}',
+    '.desktop-nav .wsite-menu-item-wrap>.wsite-menu-wrap>.wsite-menu{display:block!important;width:200px!important;margin:0!important;padding:0!important;background:#fff!important;border:0!important;box-shadow:none!important;white-space:nowrap!important;}',
+    '.desktop-nav .wsite-menu-item-wrap>.wsite-menu-wrap>.wsite-menu>li{display:block!important;margin:0!important;padding:0!important;width:200px!important;}',
+    '.desktop-nav .wsite-menu-item-wrap>.wsite-menu-wrap>.wsite-menu>li>a{display:block!important;margin:0!important;padding:14px 15px!important;color:#111!important;background:#fff!important;border:0!important;text-align:left!important;text-transform:uppercase!important;letter-spacing:.06em!important;font-size:13px!important;font-weight:600!important;line-height:1.3!important;}',
+    '.desktop-nav .wsite-menu-item-wrap>.wsite-menu-wrap>.wsite-menu>li>a:hover{color:#35A89A!important;background:#fff!important;}',
     '.archive-gallery{max-width:760px;margin:0 auto 18px;}',
     '.archive-gallery-main{position:relative;display:flex;align-items:center;justify-content:center;min-height:280px;background:transparent;}',
     '.archive-gallery-main img{display:block;max-width:100%;max-height:520px;width:auto;height:auto;margin:auto;}',
@@ -39,7 +39,7 @@
     '.archive-gallery-thumbs button{border:1px solid #ddd;background:#fff;padding:2px;cursor:pointer;opacity:.72;}',
     '.archive-gallery-thumbs button.active{opacity:1;border-color:#35A89A;}',
     '.archive-gallery-thumbs img{display:block;width:72px;height:48px;object-fit:cover;}',
-    '@media(max-width:767px){.desktop-nav .wsite-menu-item-wrap>.wsite-menu-wrap{position:static!important;transform:none!important;width:auto!important;}.archive-gallery-main{min-height:180px}.archive-gallery-thumbs img{width:54px;height:38px}}'
+    '@media(max-width:767px){.desktop-nav .wsite-menu-item-wrap>.wsite-menu-wrap{position:static!important;transform:none!important;width:auto!important;min-width:0!important;}.desktop-nav .wsite-menu-item-wrap>.wsite-menu-wrap>.wsite-menu,.desktop-nav .wsite-menu-item-wrap>.wsite-menu-wrap>.wsite-menu>li{width:auto!important;}.archive-gallery-main{min-height:180px}.archive-gallery-thumbs img{width:54px;height:38px}}'
   ].join('');
   document.head.appendChild(repairStyle);
 
@@ -84,13 +84,9 @@
         list.className = 'wsite-menu';
         wrap.appendChild(list);
       }
-      list.innerHTML = '<li class="wsite-menu-subitem-wrap"><a href="games.html#demon-archive" class="wsite-menu-subitem"><span class="wsite-menu-title">Demon Archive</span></a></li><li class="wsite-menu-subitem-wrap"><a href="slots.html" class="wsite-menu-subitem"><span class="wsite-menu-title">Slots</span></a></li>';
+      list.innerHTML = '<li class="wsite-menu-subitem-wrap"><a href="slots.html" class="wsite-menu-subitem"><span class="wsite-menu-title">Slots</span></a></li>';
       item.onmouseenter = function () { wrap.style.display = 'block'; };
       item.onmouseleave = function () { wrap.style.display = 'none'; };
-    });
-
-    document.querySelectorAll('h2.wsite-content-title').forEach(function (heading) {
-      if ((heading.textContent || '').indexOf('Demon Archive') !== -1) heading.id = 'demon-archive';
     });
   }
 
@@ -125,8 +121,7 @@
   function makeGallery(container, files, autoplay) {
     if (!container) return;
     var index = 0;
-    var html = '<div class="archive-gallery"><div class="archive-gallery-main"><button class="archive-gallery-arrow prev" type="button" aria-label="Previous">‹</button><img alt="Game screenshot"><button class="archive-gallery-arrow next" type="button" aria-label="Next">›</button></div><div class="archive-gallery-thumbs"></div></div>';
-    container.innerHTML = html;
+    container.innerHTML = '<div class="archive-gallery"><div class="archive-gallery-main"><button class="archive-gallery-arrow prev" type="button" aria-label="Previous">‹</button><img alt="Game screenshot"><button class="archive-gallery-arrow next" type="button" aria-label="Next">›</button></div><div class="archive-gallery-thumbs"></div></div>';
     var gallery = container.querySelector('.archive-gallery');
     var main = gallery.querySelector('.archive-gallery-main img');
     var thumbs = gallery.querySelector('.archive-gallery-thumbs');
@@ -150,7 +145,6 @@
     gallery.querySelector('.prev').onclick = function () { show(index - 1); };
     gallery.querySelector('.next').onclick = function () { show(index + 1); };
     show(0);
-
     if (autoplay) setInterval(function () { show(index + 1); }, 5000);
   }
 
@@ -172,22 +166,12 @@
     ], false);
   }
 
-  function restoreThemeInteractions() {
-    if (!window.jQuery) return;
-    var $ = window.jQuery;
-    $('.hamburger').off('click.archiveFix').on('click.archiveFix', function (e) {
-      e.preventDefault();
-      $('body').toggleClass('nav-open');
-    });
-  }
-
   function boot() {
     repairNode(document);
     restoreGameMenus();
     repairLogo();
     repairButtons();
     restoreSlotsGalleries();
-    restoreThemeInteractions();
 
     var observer = new MutationObserver(function (mutations) {
       mutations.forEach(function (mutation) {
