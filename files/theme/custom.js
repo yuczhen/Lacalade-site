@@ -1,3 +1,38 @@
+(function () {
+  var styles = [
+    'https://cdn11.editmysite.com/css/sites.css?buildtime=1234',
+    'https://cdn11.editmysite.com/css/old/fancybox.css?buildtime=1234',
+    'https://cdn11.editmysite.com/css/social-icons.css?buildtime=1234',
+    'https://cdn2.editmysite.com/fonts/Roboto/font.css?2',
+    'https://cdn2.editmysite.com/fonts/Playfair_Display/font.css?2'
+  ];
+
+  styles.forEach(function (href) {
+    if (!document.querySelector('link[href="' + href + '"]')) {
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      document.head.appendChild(link);
+    }
+  });
+
+  function restoreSecureEmbeds() {
+    document.querySelectorAll('iframe[src^="http://www.youtube.com"], iframe[src^="http://youtube.com"]').forEach(function (iframe) {
+      iframe.src = iframe.src.replace(/^http:\/\//i, 'https://');
+    });
+
+    document.querySelectorAll('img[src^="http://cdn"], source[src^="http://cdn"]').forEach(function (el) {
+      el.src = el.src.replace(/^http:\/\//i, 'https://');
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', restoreSecureEmbeds);
+  } else {
+    restoreSecureEmbeds();
+  }
+})();
+
 jQuery(function($) {
 
   // Fixed nav
