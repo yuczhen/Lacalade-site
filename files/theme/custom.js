@@ -1,230 +1,175 @@
 (function () {
-  var externalStyles = [
+  var SITE_UPLOAD_PREFIX = 'uploads/';
+
+  function addStylesheet(href) {
+    if (document.querySelector('link[href="' + href + '"]')) return;
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+  }
+
+  [
     'https://cdn11.editmysite.com/css/sites.css?buildtime=1234',
     'https://cdn11.editmysite.com/css/old/fancybox.css?buildtime=1234',
     'https://cdn11.editmysite.com/css/social-icons.css?buildtime=1234',
     'https://cdn2.editmysite.com/fonts/Roboto/font.css?2',
     'https://cdn2.editmysite.com/fonts/Playfair_Display/font.css?2'
-  ];
-
-  externalStyles.forEach(function (href) {
-    if (!document.querySelector('link[href="' + href + '"]')) {
-      var link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = href;
-      document.head.appendChild(link);
-    }
-  });
+  ].forEach(addStylesheet);
 
   var localTheme = document.createElement('link');
   localTheme.rel = 'stylesheet';
-  localTheme.href = 'files/main_style.css?restore=3';
+  localTheme.href = 'files/main_style.css?restore=4';
   document.head.appendChild(localTheme);
+
+  var repairStyle = document.createElement('style');
+  repairStyle.textContent = [
+    '.nav-wrap .nav .wsite-menu-item-wrap{position:relative;}',
+    '.nav-wrap .nav .wsite-menu-item-wrap>.wsite-menu-wrap{position:absolute!important;left:50%!important;top:100%!important;transform:translateX(-50%)!important;width:auto!important;min-width:155px!important;z-index:30!important;margin-top:4px!important;}',
+    '.nav-wrap .nav .wsite-menu-item-wrap>.wsite-menu-wrap>.wsite-menu{display:block!important;min-width:155px!important;background:#fff!important;box-shadow:0 2px 8px rgba(0,0,0,.18)!important;white-space:nowrap!important;}',
+    '.nav-wrap .nav .wsite-menu-item-wrap>.wsite-menu-wrap>.wsite-menu>li{display:block!important;margin:0!important;width:auto!important;}',
+    '.nav-wrap .nav .wsite-menu-item-wrap>.wsite-menu-wrap>.wsite-menu>li>a{display:block!important;padding:10px 14px!important;color:#555!important;background:#fff!important;border:0!important;text-align:left!important;font-size:12px!important;}',
+    '.nav-wrap .nav .wsite-menu-item-wrap>.wsite-menu-wrap>.wsite-menu>li>a:hover{color:#35A89A!important;background:#f7f7f7!important;}',
+    '@media(max-width:767px){.nav-wrap .nav .wsite-menu-item-wrap>.wsite-menu-wrap{position:static!important;transform:none!important;min-width:0!important;margin:0!important;}.nav-wrap .nav .wsite-menu-item-wrap>.wsite-menu-wrap>.wsite-menu{box-shadow:none!important;}}'
+  ].join('');
+  document.head.appendChild(repairStyle);
+
+  function normalizeUrl(value) {
+    if (!value) return value;
+    value = value.replace(/^http:\/\//i, 'https://');
+    value = value.replace(/^https:\/\/yuczhen\.github\.io\/Lacalade-site\/4\/3\/4\/8\/43480965\//i, 'uploads/4/3/4/8/43480965/');
+    value = value.replace(/^\/Lacalade-site\/4\/3\/4\/8\/43480965\//i, 'uploads/4/3/4/8/43480965/');
+    value = value.replace(/^\/4\/3\/4\/8\/43480965\//i, 'uploads/4/3/4/8/43480965/');
+    value = value.replace(/^4\/3\/4\/8\/43480965\//i, 'uploads/4/3/4/8/43480965/');
+    return value;
+  }
+
+  function repairNode(root) {
+    if (!root || root.nodeType !== 1 && root.nodeType !== 9) return;
+    var nodes = root.matches && root.matches('[src],[href]') ? [root] : [];
+    if (root.querySelectorAll) nodes = nodes.concat(Array.prototype.slice.call(root.querySelectorAll('[src],[href]')));
+
+    nodes.forEach(function (el) {
+      ['src', 'href'].forEach(function (attr) {
+        if (!el.hasAttribute || !el.hasAttribute(attr)) return;
+        var current = el.getAttribute(attr);
+        var fixed = normalizeUrl(current);
+        if (fixed !== current) el.setAttribute(attr, fixed);
+      });
+    });
+  }
 
   function restoreGameMenus() {
     document.querySelectorAll('.wsite-menu-item-wrap > a[href="games.html"]').forEach(function (gamesLink) {
       var item = gamesLink.closest('.wsite-menu-item-wrap');
       if (!item) return;
 
-      var wrap = item.querySelector('.wsite-menu-wrap');
+      var wrap = item.querySelector(':scope > .wsite-menu-wrap');
       if (!wrap) {
         wrap = document.createElement('div');
         wrap.className = 'wsite-menu-wrap';
-        wrap.style.display = 'none';
-        wrap.innerHTML = '<ul class="wsite-menu"></ul>';
         item.appendChild(wrap);
       }
+      wrap.style.display = 'none';
 
       var list = wrap.querySelector('.wsite-menu');
-      if (!list) return;
-
-      if (!list.querySelector('a[href="games.html#demon-archive"]')) {
-        var demon = document.createElement('li');
-        demon.className = 'wsite-menu-subitem-wrap';
-        demon.innerHTML = '<a href="games.html#demon-archive" class="wsite-menu-subitem"><span class="wsite-menu-title">Demon Archive</span></a>';
-        list.insertBefore(demon, list.firstChild);
+      if (!list) {
+        list = document.createElement('ul');
+        list.className = 'wsite-menu';
+        wrap.appendChild(list);
       }
+      list.innerHTML = '<li class="wsite-menu-subitem-wrap"><a href="games.html#demon-archive" class="wsite-menu-subitem"><span class="wsite-menu-title">Demon Archive</span></a></li><li class="wsite-menu-subitem-wrap"><a href="slots.html" class="wsite-menu-subitem"><span class="wsite-menu-title">Slots</span></a></li>';
 
-      if (!list.querySelector('a[href="slots.html"]')) {
-        var slots = document.createElement('li');
-        slots.className = 'wsite-menu-subitem-wrap';
-        slots.innerHTML = '<a href="slots.html" class="wsite-menu-subitem"><span class="wsite-menu-title">Slots</span></a>';
-        list.appendChild(slots);
-      }
-
-      item.addEventListener('mouseenter', function () {
-        wrap.style.display = 'block';
-      });
-      item.addEventListener('mouseleave', function () {
-        wrap.style.display = 'none';
-      });
+      item.onmouseenter = function () { wrap.style.display = 'block'; };
+      item.onmouseleave = function () { wrap.style.display = 'none'; };
     });
 
     document.querySelectorAll('h2.wsite-content-title').forEach(function (heading) {
-      if ((heading.textContent || '').indexOf('Demon Archive') !== -1) {
-        heading.id = 'demon-archive';
-      }
+      if ((heading.textContent || '').indexOf('Demon Archive') !== -1) heading.id = 'demon-archive';
     });
   }
 
-  function restoreArchivedSite() {
-    document.querySelectorAll('iframe[src^="http://www.youtube.com"], iframe[src^="http://youtube.com"]').forEach(function (iframe) {
-      iframe.src = iframe.src.replace(/^http:\/\//i, 'https://');
-    });
-
-    document.querySelectorAll('img[src^="http://cdn"], source[src^="http://cdn"]').forEach(function (el) {
-      el.src = el.src.replace(/^http:\/\//i, 'https://');
-    });
-
+  function repairLogo() {
     document.querySelectorAll('.wsite-logo img').forEach(function (img) {
-      function replaceBrokenLogo() {
-        if (!img.complete || img.naturalWidth === 0) {
-          var link = img.closest('a');
-          if (link) {
-            link.textContent = 'LA CALADE GAMES';
-            link.href = 'index.html';
-          }
-        }
+      function fallback() {
+        if (img.naturalWidth !== 0) return;
+        var link = img.closest('a');
+        if (!link) return;
+        link.textContent = 'LA CALADE GAMES';
+        link.href = 'index.html';
       }
-      img.addEventListener('error', replaceBrokenLogo, { once: true });
-      replaceBrokenLogo();
+      img.addEventListener('error', fallback, { once: true });
+      if (img.complete) fallback();
     });
+  }
 
+  function repairButtons() {
     document.querySelectorAll('a.wsite-button').forEach(function (button) {
       var label = (button.textContent || '').trim().toLowerCase();
       if (label !== 'learn more') return;
-
       if (document.body.classList.contains('wsite-page-about')) {
         button.href = 'https://www.facebook.com/lacaladegames';
         button.target = '_blank';
         button.rel = 'noopener noreferrer';
       } else if (document.body.classList.contains('wsite-page-games') && (!button.getAttribute('href') || button.getAttribute('href') === 'javascript:;')) {
         button.href = 'slots.html';
-        button.removeAttribute('target');
       }
     });
-
-    restoreGameMenus();
   }
 
   function restoreSlideshows() {
     if (!document.getElementById('810703760554426299-slideshow') && !document.getElementById('538190031859534373-slideshow')) return;
 
-    if (!document.querySelector('link[href*="slideshow/slideshow.css"]')) {
-      var css = document.createElement('link');
-      css.rel = 'stylesheet';
-      css.href = 'https://cdn11.editmysite.com/css/old/slideshow/slideshow.css?buildtime=1234';
-      document.head.appendChild(css);
-    }
+    addStylesheet('https://cdn11.editmysite.com/css/old/slideshow/slideshow.css?buildtime=1234');
 
-    function replayArchiveSlideshowScripts() {
+    function replay() {
       document.querySelectorAll('script:not([src])').forEach(function (script) {
         var code = script.textContent || '';
         if (code.indexOf('wSlideshow.render') === -1 || script.dataset.replayed === '1') return;
         script.dataset.replayed = '1';
-        try {
-          new Function(code)();
-        } catch (e) {
-          console.warn('Archived slideshow restore failed:', e);
-        }
+        try { new Function(code)(); } catch (e) { console.warn('Slideshow restore failed', e); }
       });
+      setTimeout(function () { repairNode(document); }, 50);
+      setTimeout(function () { repairNode(document); }, 500);
     }
 
-    if (window.wSlideshow) {
-      replayArchiveSlideshowScripts();
-      return;
-    }
-
+    if (window.wSlideshow) return replay();
     var js = document.createElement('script');
     js.src = 'https://cdn11.editmysite.com/js/old/slideshow-jq.js?buildtime=1234';
-    js.onload = replayArchiveSlideshowScripts;
+    js.onload = replay;
     document.head.appendChild(js);
   }
 
-  function boot() {
-    restoreArchivedSite();
-    restoreSlideshows();
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
-  } else {
-    boot();
-  }
-})();
-
-jQuery(function($) {
-  $.fn.checkElementPositioning = function($el, $offsetHeightEl, scrollClass) {
-    if (!this.length) return;
-    if (((this.offset().top - $(window).scrollTop()) <= $offsetHeightEl.outerHeight()) && !$el.hasClass(scrollClass)) {
-      $el.addClass(scrollClass);
-    } else if (((this.offset().top - $(window).scrollTop()) >= $offsetHeightEl.outerHeight()) && $el.hasClass(scrollClass)) {
-      $el.removeClass(scrollClass);
-    }
-  };
-
-  $.fn.expandableSidebar = function(expandedClass) {
-    var $me = this;
-    $me.on('click', function() {
-      $me.toggleClass(expandedClass);
+  function restoreThemeInteractions() {
+    if (!window.jQuery) return;
+    var $ = window.jQuery;
+    $('.hamburger').off('click.archiveFix').on('click.archiveFix', function (e) {
+      e.preventDefault();
+      $('body').toggleClass('nav-open');
     });
-  };
+    $('.imageGallery').each(function () {
+      if ($(this).children('div').length <= 6) $(this).children('div').addClass('fullwidth-mobile');
+    });
+  }
 
-  var impactController = {
-    init: function() {
-      this._addClasses();
-      this._attachEvents();
-      var base = this;
-      setTimeout(function() { base._checkCartItems(); }, 1000);
-    },
+  function boot() {
+    repairNode(document);
+    restoreGameMenus();
+    repairLogo();
+    repairButtons();
+    restoreSlideshows();
+    restoreThemeInteractions();
 
-    _addClasses: function() {
-      $('.wsite-form-sublabel').each(function() {
-        var sublabel = $(this).text();
-        $(this).prev('.wsite-form-input').attr('placeholder', sublabel);
+    var observer = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        mutation.addedNodes.forEach(function (node) {
+          if (node.nodeType === 1) repairNode(node);
+        });
       });
-      $('.imageGallery').each(function() {
-        if ($(this).children('div').length <= 6) {
-          $(this).children('div').addClass('fullwidth-mobile');
-        }
-      });
-    },
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+  }
 
-    _stickyFooter: function() {
-      var stickyFooterMargin = $('#footer-wrap').height();
-      $('.wrapper').css('margin-bottom', -stickyFooterMargin);
-      $('#footer-wrap, .sticky-footer-push').css('height', stickyFooterMargin);
-    },
-
-    _checkCartItems: function() {
-      $('body').toggleClass('cart-full', $('#wsite-mini-cart').find('li.wsite-product-item').length > 0);
-    },
-
-    _attachEvents: function() {
-      var base = this;
-      $('.hamburger').on('click', function(e) {
-        e.preventDefault();
-        $('body').toggleClass('nav-open');
-      });
-
-      $(window).on('scroll', function() {
-        if ($('body.page-has-banner').length > 0) {
-          $('.banner-wrap').checkElementPositioning($('body'), $('.menu-controls-wrap'), 'affix');
-        } else {
-          $('.main-wrap').checkElementPositioning($('body'), $('.menu-controls-wrap'), 'affix');
-        }
-      });
-
-      $('.wsite-com-sidebar').expandableSidebar('sidebar-expanded');
-      $('#wsite-search-sidebar').expandableSidebar('sidebar-expanded');
-      if ($(window).width() > 767) base._stickyFooter();
-
-      var login = $('#member-login').clone(true);
-      $('#navmobile .wsite-menu-default').append(login);
-    }
-  };
-
-  $(document).ready(function() {
-    impactController.init();
-  });
-});
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
