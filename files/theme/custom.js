@@ -16,12 +16,56 @@
     }
   });
 
-  // Re-apply the local theme after Weebly's shared CSS so the original
-  // theme button, navigation and spacing rules win in the cascade.
   var localTheme = document.createElement('link');
   localTheme.rel = 'stylesheet';
-  localTheme.href = 'files/main_style.css?restore=2';
+  localTheme.href = 'files/main_style.css?restore=3';
   document.head.appendChild(localTheme);
+
+  function restoreGameMenus() {
+    document.querySelectorAll('.wsite-menu-item-wrap > a[href="games.html"]').forEach(function (gamesLink) {
+      var item = gamesLink.closest('.wsite-menu-item-wrap');
+      if (!item) return;
+
+      var wrap = item.querySelector('.wsite-menu-wrap');
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.className = 'wsite-menu-wrap';
+        wrap.style.display = 'none';
+        wrap.innerHTML = '<ul class="wsite-menu"></ul>';
+        item.appendChild(wrap);
+      }
+
+      var list = wrap.querySelector('.wsite-menu');
+      if (!list) return;
+
+      if (!list.querySelector('a[href="games.html#demon-archive"]')) {
+        var demon = document.createElement('li');
+        demon.className = 'wsite-menu-subitem-wrap';
+        demon.innerHTML = '<a href="games.html#demon-archive" class="wsite-menu-subitem"><span class="wsite-menu-title">Demon Archive</span></a>';
+        list.insertBefore(demon, list.firstChild);
+      }
+
+      if (!list.querySelector('a[href="slots.html"]')) {
+        var slots = document.createElement('li');
+        slots.className = 'wsite-menu-subitem-wrap';
+        slots.innerHTML = '<a href="slots.html" class="wsite-menu-subitem"><span class="wsite-menu-title">Slots</span></a>';
+        list.appendChild(slots);
+      }
+
+      item.addEventListener('mouseenter', function () {
+        wrap.style.display = 'block';
+      });
+      item.addEventListener('mouseleave', function () {
+        wrap.style.display = 'none';
+      });
+    });
+
+    document.querySelectorAll('h2.wsite-content-title').forEach(function (heading) {
+      if ((heading.textContent || '').indexOf('Demon Archive') !== -1) {
+        heading.id = 'demon-archive';
+      }
+    });
+  }
 
   function restoreArchivedSite() {
     document.querySelectorAll('iframe[src^="http://www.youtube.com"], iframe[src^="http://youtube.com"]').forEach(function (iframe) {
@@ -32,9 +76,6 @@
       el.src = el.src.replace(/^http:\/\//i, 'https://');
     });
 
-    // The exported Weebly archive references a logo image that was not
-    // included in the export. Replace the broken image with the original
-    // textual brand treatment instead of showing a broken-image icon.
     document.querySelectorAll('.wsite-logo img').forEach(function (img) {
       function replaceBrokenLogo() {
         if (!img.complete || img.naturalWidth === 0) {
@@ -49,7 +90,6 @@
       replaceBrokenLogo();
     });
 
-    // Normalize archived call-to-action links.
     document.querySelectorAll('a.wsite-button').forEach(function (button) {
       var label = (button.textContent || '').trim().toLowerCase();
       if (label !== 'learn more') return;
@@ -63,12 +103,53 @@
         button.removeAttribute('target');
       }
     });
+
+    restoreGameMenus();
+  }
+
+  function restoreSlideshows() {
+    if (!document.getElementById('810703760554426299-slideshow') && !document.getElementById('538190031859534373-slideshow')) return;
+
+    if (!document.querySelector('link[href*="slideshow/slideshow.css"]')) {
+      var css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = 'https://cdn11.editmysite.com/css/old/slideshow/slideshow.css?buildtime=1234';
+      document.head.appendChild(css);
+    }
+
+    function replayArchiveSlideshowScripts() {
+      document.querySelectorAll('script:not([src])').forEach(function (script) {
+        var code = script.textContent || '';
+        if (code.indexOf('wSlideshow.render') === -1 || script.dataset.replayed === '1') return;
+        script.dataset.replayed = '1';
+        try {
+          new Function(code)();
+        } catch (e) {
+          console.warn('Archived slideshow restore failed:', e);
+        }
+      });
+    }
+
+    if (window.wSlideshow) {
+      replayArchiveSlideshowScripts();
+      return;
+    }
+
+    var js = document.createElement('script');
+    js.src = 'https://cdn11.editmysite.com/js/old/slideshow-jq.js?buildtime=1234';
+    js.onload = replayArchiveSlideshowScripts;
+    document.head.appendChild(js);
+  }
+
+  function boot() {
+    restoreArchivedSite();
+    restoreSlideshows();
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', restoreArchivedSite);
+    document.addEventListener('DOMContentLoaded', boot);
   } else {
-    restoreArchivedSite();
+    boot();
   }
 })();
 
@@ -136,7 +217,6 @@ jQuery(function($) {
 
       $('.wsite-com-sidebar').expandableSidebar('sidebar-expanded');
       $('#wsite-search-sidebar').expandableSidebar('sidebar-expanded');
-
       if ($(window).width() > 767) base._stickyFooter();
 
       var login = $('#member-login').clone(true);
